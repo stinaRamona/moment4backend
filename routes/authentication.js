@@ -3,6 +3,7 @@ const express = require("express");
 require("dotenv").config();
 const router = express.Router();
 const sqlite3 = require("sqlite3").verbose(); 
+const bcrypt = require("bcrypt"); 
 
 const db = new sqlite3.Database(process.env.DATABASE);
 
@@ -16,12 +17,15 @@ router.post("/register", async (req, res) => {
         res.status(401).json({message: "Fälten får inte lämnas tomma"})
     }
     
-    //kolla om användaren redan finns
+    //hasha lösenord så det inte syns i databasen 
+    let hashedPassword = await bcrypt.hash(req.body.password, 10)
     
+    //kolla om användaren redan finns
+
     //Lägg till användaren 
     const sql = "INSERT INTO users (email, username, password) VALUES (?, ?, ?)"; 
 
-    db.run(sql, [email, username, password], (error) => {
+    db.run(sql, [email, username, hashedPassword], (error) => {
         if(error){
             res.status(400).json({error: "Kunde inte skapa användare"}); 
         } else {
@@ -39,15 +43,28 @@ router.post("/login", async (req, res) => {
     try{
         const { username, password } = req.body;
 
-        if(!username || !password) { //utveckla validering
+        if( !username || !password) { //utveckla validering
             res.status(401).json({message: "Fälten får inte lämnas tomma"}); 
         }
 
-        if(username === "Stina" && password === "password1"){
-            res.status(200).json({message: "Du har loggats in!"}); 
-        } else {
-            res.status(401).json({error: "fel användarnamn eller lösenord!"}); 
-        }
+        //kolla om användaren finns 
+        const sql = `SELECT * FROM users WHERE username=?`; 
+        db.get(sql, [username], async(err, row) => {
+            if(err){
+                res.status(400).json({message: "Kunde inte logga in. Försök igen"});
+            } else if(!row) {
+                res.status(401).json({message: "Fel användarnamn eller lösenord"}); 
+            } else {
+                //hamnar här om allt stämmer. Användare/lösenord kollas
+                const passwordMatch = await bcrypt.compare(password, row.password);
+
+                if(!passwordMatch){
+                    res.status(401).json({message: "Fel användarnamn eller lösenord"}); 
+                } else {
+                    res.status(200).json({message: "Du loggas in"}); 
+                }
+            }
+        })
 
     } catch(error){
         res.status(500).json({error: "Något har gått fel med servern"}) 
