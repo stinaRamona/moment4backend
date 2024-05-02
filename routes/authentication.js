@@ -1,19 +1,34 @@
 
 const express = require("express"); 
-const router = express.Router(); 
+require("dotenv").config();
+const router = express.Router();
+const sqlite3 = require("sqlite3").verbose(); 
+
+const db = new sqlite3.Database(process.env.DATABASE);
 
 //Route för registrering 
 router.post("/register", async (req, res) => {
     try {  
-    const { username, password } = req.body; 
+    const { email, username, password } = req.body; 
 
     //validering 
-    if(!username || !password) { //utveckla validering
+    if(!email || !username || !password) { //utveckla validering
         res.status(401).json({message: "Fälten får inte lämnas tomma"})
-    } else {
-        res.status(201).json({message: "Användare skapad!"}); 
     }
+    
+    //kolla om användaren redan finns
+    
+    //Lägg till användaren 
+    const sql = "INSERT INTO users (email, username, password) VALUES (?, ?, ?)"; 
 
+    db.run(sql, [email, username, password], (error) => {
+        if(error){
+            res.status(400).json({error: "Kunde inte skapa användare"}); 
+        } else {
+            res.status(201).json({message: "Användare skapad!"});
+        }
+    }); 
+ 
     } catch(error){
         res.status(500).json({error: "Något har gått fel med servern"})
     }
