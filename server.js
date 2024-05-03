@@ -1,4 +1,5 @@
 const express = require("express"); 
+const cors = require("cors"); 
 const bodyParser = require("body-parser");
 const authentication = require("./routes/authentication"); 
 const jwt = require("jsonwebtoken"); 
@@ -8,6 +9,7 @@ let port = process.env.PORT || 3001;
 
 const app = express();
 app.use(bodyParser.json()); 
+app.use(cors()); 
 
 app.use("/api", authentication)
 
