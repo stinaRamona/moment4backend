@@ -2,6 +2,7 @@
 const express = require("express"); 
 require("dotenv").config();
 const router = express.Router();
+const jwt = require("jsonwebtoken"); 
 const sqlite3 = require("sqlite3").verbose(); 
 const bcrypt = require("bcrypt"); 
 
@@ -61,7 +62,17 @@ router.post("/login", async (req, res) => {
                 if(!passwordMatch){
                     res.status(401).json({message: "Fel användarnamn eller lösenord"}); 
                 } else {
-                    res.status(200).json({message: "Du loggas in"}); 
+                    //JWT 
+                    const payload = { username: username};
+                    
+                    const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, {expiresIn: '10h'});
+                    
+                    const response = {
+                        message: "Du loggas in", 
+                        token: token
+                    }
+
+                    res.status(200).json({response}); 
                 }
             }
         })
