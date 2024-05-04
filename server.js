@@ -18,22 +18,7 @@ app.use("/api", authentication)
  
 
 app.get("/api/mypage", authenticateToken, (req, res) => {
-
-    username = req.body.username; 
-
-    db.run(`SELECT * FROM users WHERE username = ?`, [username], (err, result) => {
-        if(err){
-            res.status(500).json({message: "Något gick fel" + err})
-            return
-        }
-
-        if(result.length === 0) {
-            res.status(404).json({message: "Hittade ingen data!"})
-        } else {
-            res.json(result)
-        }
-    });
- 
+    res.json({message: "skyddad sida"}); 
 }); 
 
 //validera token
