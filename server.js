@@ -18,23 +18,18 @@ app.use("/api", authentication)
  
 
 app.get("/api/mypage", authenticateToken, (req, res) => {
-    
-    console.log("Fetching user information...");
 
     const username = req.username
 
     db.get(`SELECT * FROM users WHERE username=?`, [username],(err, row) =>{
         if(err){
-            console.error("Database error:", err);
             res.status(500).json({message: "serverfel"});
             return 
         }
 
         if(!row){
-            console.log("User not found.");
             res.status(404).json({message: "ingen användare hittades"});
         } else {
-            console.log("User found:", row);
             res.json(row);
         }
     });  
