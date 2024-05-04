@@ -63,7 +63,7 @@ router.post("/login", async (req, res) => {
                     res.status(401).json({message: "Fel användarnamn eller lösenord"}); 
                 } else {
                     //JWT 
-                    const payload = { username: username};
+                    const payload = { username: username };
                     
                     const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, {expiresIn: '10h'});
                     

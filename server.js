@@ -18,7 +18,26 @@ app.use("/api", authentication)
  
 
 app.get("/api/mypage", authenticateToken, (req, res) => {
-    res.json({message: "skyddad sida"}); 
+    
+    console.log("Fetching user information...");
+
+    const username = req.username
+
+    db.get(`SELECT * FROM users WHERE username=?`, [username],(err, row) =>{
+        if(err){
+            console.error("Database error:", err);
+            res.status(500).json({message: "serverfel"});
+            return 
+        }
+
+        if(!row){
+            console.log("User not found.");
+            res.status(404).json({message: "ingen användare hittades"});
+        } else {
+            console.log("User found:", row);
+            res.json(row);
+        }
+    });  
 }); 
 
 //validera token
@@ -35,8 +54,9 @@ function authenticateToken(req, res, next){
             return res.status(403).json({message: "Ogiltigt token!"}); 
         }
 
-        req.username = username; 
-        next()
+        console.log("Token verified. Username:", username);//kolla om det är korrekt
+        req.username = username.username; 
+        next();
     })
 
 }
